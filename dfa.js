@@ -1,12 +1,10 @@
-// dfa.js
-
 export default class DFA {
     constructor({ states, alphabet, transitions, start, finals }) {
-      this.states = states;           // Array of state labels
-      this.alphabet = alphabet;       // Array of input symbols
+      this.states = states; // Array of state labels
+      this.alphabet = alphabet; // Array of input symbols
       this.transitions = transitions; // Object: { state: { symbol: nextState, ... }, ... }
-      this.start = start;             // Start state label
-      this.finals = finals;           // Array of final state labels
+      this.start = start; // Start state label
+      this.finals = finals; // Array of final state labels
     }
   
     /**

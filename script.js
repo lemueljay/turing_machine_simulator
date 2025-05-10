@@ -5,16 +5,14 @@ let selectedElement = null;
 let connectionSource = null;
 let selectedItem = null;
 let startState = null;
+let multiSelect = []; 
+let dragData = null;
 const radius = 30;
 const transitions = [];
 
 function clearSelection() {
-  if (selectedItem) {
-    const el = selectedItem.element;
-    if (selectedItem.type === 'state') el.querySelector('circle').classList.remove('highlight');
-    if (selectedItem.type === 'transition') el.querySelector('path').classList.remove('highlight');
-  }
-  selectedItem = null;
+    document.querySelectorAll('.state').forEach(c => c.classList.remove('highlight'));
+    multiSelect = [];
 }
 
 canvas.addEventListener('dblclick', e => {
@@ -201,19 +199,67 @@ window.addEventListener('keydown', e => {
     }
     selectedItem = null;
   }
+
+  if (e.ctrlKey && e.key.toLowerCase() === 'a') {
+    e.preventDefault();
+    clearSelection();
+    multiSelect = Array.from(document.querySelectorAll('.state-group'));
+    multiSelect.forEach(g => g.querySelector('circle.state').classList.add('highlight'));
+  }
 });
 
 function startDrag(evt) {
-  evt.stopPropagation();
-  selectedElement = evt.currentTarget;
-  clearSelection();
-  const tr = selectedElement.getCTM();
-  const p = canvas.createSVGPoint(); p.x = evt.clientX; p.y = evt.clientY;
-  const loc = p.matrixTransform(canvas.getScreenCTM().inverse());
-  offset = { x: loc.x - tr.e, y: loc.y - tr.f };
-  window.addEventListener('mousemove', drag);
-  window.addEventListener('mouseup', endDrag);
-}
+    evt.stopPropagation();
+    const targetG = evt.currentTarget;
+    if (!multiSelect.includes(targetG)) {
+      clearSelection();
+      multiSelect = [ targetG ];
+      targetG.querySelector('circle.state').classList.add('highlight');
+    }
+  
+    // compute and store offsets for each selected element
+    const p = canvas.createSVGPoint();
+    p.x = evt.clientX; p.y = evt.clientY;
+    const loc = p.matrixTransform(canvas.getScreenCTM().inverse());
+  
+    dragData = multiSelect.map(g => {
+      const ctm = g.getCTM();
+      return {
+        g,
+        offsetX: loc.x - ctm.e,
+        offsetY: loc.y - ctm.f
+      };
+    });
+  
+    window.addEventListener('mousemove', dragAll);
+    window.addEventListener('mouseup',   endDragAll);
+  }
+
+  function dragAll(evt) {
+    if (!dragData) return;
+  
+    const p = canvas.createSVGPoint();
+    p.x = evt.clientX; p.y = evt.clientY;
+    const loc = p.matrixTransform(canvas.getScreenCTM().inverse());
+  
+    dragData.forEach(item => {
+      const dx = loc.x - item.offsetX;
+      const dy = loc.y - item.offsetY;
+      item.g.setAttribute('transform', `translate(${dx},${dy})`);
+      refreshTrans(item.g);
+    });
+  }
+  
+  function endDragAll() {
+    window.removeEventListener('mousemove', dragAll);
+    window.removeEventListener('mouseup',   endDragAll);
+    dragData = null;
+  }
+
+  canvas.querySelectorAll('.state-group').forEach(g => {
+    g.removeEventListener('mousedown', startDrag); // if already bound
+    g.addEventListener('mousedown', startDrag);
+  });
 
 function drag(evt) {
   if (!selectedElement) return;

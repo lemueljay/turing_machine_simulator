@@ -1,56 +1,200 @@
 /* DFA Visualizer Styles */
-body, html {
+body,
+html {
     margin: 0;
     padding: 0;
     height: 100%;
     overflow: hidden;
     font-family: Arial, sans-serif;
-  }
-  #canvas {
+}
+
+:root {
+    --anim-color: #2196F3;
+}
+
+.current-state .state,
+.current-edge path,
+.input-char.current {
+    stroke: var(--anim-color) !important;
+
+}
+
+.input-char.current {
+    fill: var(--anim-color) !important;
+    font-weight: bold;
+}
+
+#dfa-output table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 8px;
+}
+
+#dfa-output th,
+#dfa-output td {
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+    text-align: center;
+}
+
+#dfa-output th {
+    background: #f0f0f0;
+}
+
+/* Error highlight - only stroke, keep fill */
+.error .state,
+.error .inner-state,
+.error .start-marker,
+.error path {
+    stroke: red !important;
+}
+
+.transition-group.error path {
+    stroke: red !important;
+}
+
+#input-display {
+    font-size: 24px;
+    fill: #000;
+    pointer-events: none;
+}
+
+.input-char.current {
+    fill: #ff6b6b;
+    font-weight: bold;
+}
+
+/* Current-step highlighting */
+.current-state .state {
+    stroke: #2196F3 !important;
+    stroke-width: 4 !important;
+}
+
+.current-edge path {
+    stroke: #2196F3 !important;
+    stroke-width: 3 !important;
+}
+
+/* Control panel styling */
+#controls {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#speed-slider {
+    width: 100px;
+}
+
+#canvas {
     width: 100%;
     height: 100%;
     background-color: #f9f9f9;
     cursor: crosshair;
-  }
-  .state {
+}
+
+.state {
     fill: #ffffff;
     stroke: #333333;
     stroke-width: 2;
     cursor: move;
-  }
-  .state-label {
+    filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.15));
+}
+
+.state-label {
     font-size: 14px;
     text-anchor: middle;
     dominant-baseline: middle;
     pointer-events: none;
-  }
-  .inner-state {
+}
+
+.inner-state {
     fill: none;
     stroke: #333333;
     stroke-width: 2;
     pointer-events: none;
-  }
-  .start-marker {
+}
+
+.start-marker {
     stroke: #333333;
     stroke-width: 2;
     fill: none;
     pointer-events: none;
-  }
-  .transition-label {
+}
+
+.transition-label {
     font-size: 12px;
     text-anchor: middle;
     pointer-events: none;
     background: #fff;
-  }
-  #instructions {
+}
+
+#instructions {
     position: absolute;
     top: 10px;
     left: 10px;
-    background: rgba(255,255,255,0.8);
+    background: rgba(255, 255, 255, 0.8);
     padding: 5px 10px;
     border-radius: 4px;
     font-size: 14px;
-  }
-  .highlight {
+}
+
+.highlight {
     stroke: #FF761A !important;
-  }
+}
+
+/* ERROR HIGHLIGHTING */
+.state-group.error circle.state {
+    /* bright red fill + thick red stroke */
+    fill: #ffe5e5 !important;
+    stroke: #ff0000 !important;
+    stroke-width: 4 !important;
+}
+
+.state-group.error circle.inner-state {
+    stroke: #ff0000 !important;
+    stroke-width: 4 !important;
+}
+
+.state-group.error .start-marker {
+    stroke: #ff0000 !important;
+}
+
+.transition-group.error path {
+    stroke: #ff0000 !important;
+    stroke-width: 3 !important;
+}
+
+.transition-group.error text {
+    fill: #ff0000 !important;
+    font-weight: bold;
+}
+
+.main-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 12px 0;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.main-header .developer {
+    font-size: 0.75em;
+    font-weight: normal;
+    margin-left: 8px;
+}
+
+.main-header .developer a {
+    color: #333;
+    text-decoration: none;
+}
