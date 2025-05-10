@@ -31,12 +31,38 @@ window.stepTM = function () {
     syncFromTM();
 };
 
+// helper to do one automatic step (so we can reuse it)
+function autoStep() {
+    if (!tm || tm.halted) {
+      clearInterval(timerId);
+      timerId = null;
+      document.getElementById("playBtn").textContent = "► Play";
+      return;
+    }
+    tm.step();
+    syncFromTM();
+  }
+
+const speedSlider = document.getElementById("speedSlider");
+const speedValue  = document.getElementById("speedValue");
+const playBtn     = document.getElementById("playBtn");
+
+speedValue.textContent = `${speedSlider.value}ms`;
+speedSlider.addEventListener("input", () => {
+    // update the on-screen ms readout
+    speedValue.textContent = `${speedSlider.value}ms`;
+  
+    // if we're in “play” mode, restart the timer at the new rate
+    if (timerId) {
+      clearInterval(timerId);
+      timerId = setInterval(autoStep, parseInt(speedSlider.value, 10));
+    }
+  });
+
 // Automatic step function for the Turing machine
 window.playTM = function () {
-    if (!tm) {
-        return;
-    }
-  
+    if (!tm) return;
+
     if (timerId) {
       clearInterval(timerId);
       timerId = null;
@@ -46,17 +72,10 @@ window.playTM = function () {
   
     // set button to "Pause"
     document.getElementById("playBtn").textContent = "❚❚ Pause";
+
+    const getInterval = () => parseInt(document.getElementById("speedSlider").value, 10);
   
-    timerId = setInterval(() => {
-      if (!tm || tm.halted) {
-        clearInterval(timerId);
-        timerId = null;
-        document.getElementById("playBtn").textContent = "► Play";
-        return;
-      }
-      tm.step();
-      syncFromTM();
-    }, 100);
+    timerId = setInterval(autoStep, parseInt(speedSlider.value, 10));
   };
 
 // Synchronize the Turing machine state with the UI
