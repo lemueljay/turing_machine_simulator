@@ -19,6 +19,16 @@ Will add more as I iterate further.
 
 ---
 
+## 🕹️ How to Use the Demo
+
+1. **Copy** one of the sample JSONs from the [`demo/`](./demo/) folder.
+2. **Paste** it into the simulator’s JSON input box.
+3. Click **`Init`** to load the machine.
+4. Press **`Play`** to run the simulation automatically, or **`Step`** to run it one transition at a time.
+5. You can **change the input string** anytime and click **`Init`** again to restart the simulation with the new input.
+
+---
+
 ## 📘 Read the Full Documentation
 
 👉 [**Open in Notion**](https://unmarred-mangosteen-1ca.notion.site/From-Finite-Loops-to-Infinite-Tapes-1ef9ad59a1d880348cdbf020148e90d7?pvs=73)
