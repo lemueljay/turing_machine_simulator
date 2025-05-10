@@ -2,6 +2,15 @@
 
 A visual walkthrough of how a **Deterministic Finite Automaton (DFA)** can evolve into a fully-fledged **Turing Machine Simulator**. This documentation is perfect for anyone curious about **Theory of Computation**, from students to enthusiasts and educators.
 
+---
+
+## 🚀 Live Demo
+
+🎮 Try the simulator in your browser:  
+👉 [Turing Machine Simulator – Live Demo](https://lemueljay.github.io/turing_machine_simulator/)
+
+---
+
 ## 📘 Read the Full Documentation
 
 👉 [**Open in Notion**](https://unmarred-mangosteen-1ca.notion.site/From-Finite-Loops-to-Infinite-Tapes-1ef9ad59a1d880348cdbf020148e90d7?pvs=73)
