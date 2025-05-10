@@ -42,6 +42,13 @@ Will add more as I iterate further.
 
 ---
 
+## 🧠 A Work in Progress
+
+There’s still a lot to improve and iterate on. I’m continuing to build this project as time allows, and I’m open to **feedback**, **suggestions**, and even wild ideas from fellow enthusiasts!  
+Feel free to open an issue, fork the repo, or just reach out if you find it interesting.
+
+---
+
 ## 🚀 Get Involved
 
 If you're studying automata theory or building your own simulator, feel free to reach out for a collab!
