@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DFA Visualizer</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Inline styling for output panel */
+    #dfa-output table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+    #dfa-output th, #dfa-output td { border: 1px solid #ccc; padding: 4px 8px; text-align: center; }
+    #dfa-output th { background: #f0f0f0; }
+    /* Error highlight - only stroke, keep fill */
+    .error .state, .error .inner-state, .error .start-marker, .error path { stroke: red !important; }
+    .transition-group.error path { stroke: red !important; }
+    /* Input string display styling */
+    #input-display { font-size: 24px; fill: #000; pointer-events: none; }
+    .input-char.current { fill: #ff6b6b; font-weight: bold; }
+    /* Current-step highlighting */
+    .current-state .state { stroke: #ff6b6b !important; stroke-width: 4 !important; }
+    .current-edge path { stroke: #ff6b6b !important; stroke-width: 3 !important; }
+    /* Control panel styling */
+    #controls { position:absolute; top:10px; right:10px; z-index:10; display:flex; gap:8px; align-items:center; }
+    #speed-slider { width:100px; }
+  </style>
+</head>
+<body>
+  <div id="instructions" style="position:absolute; top:10px; left:10px; z-index:10;">
+    • Double-click blank space to add a state.<br>
+    • Alt+click a state to toggle it as the start state (caret).<br>
+    • Double-click a state to select it as the transition source.<br>
+    • Single-click another (or same) state to add a transition.<br>
+    • Shift+click a state to toggle final (double circle).<br>
+    • Click to select; Delete to remove.<br>
+    • Drag to reposition; transitions auto-update.<br>
+  </div>
+
+  <div id="controls">
+    <input id="input-string" type="text" placeholder="Enter input string">
+    <button id="export-dfa">Validate & Run</button>
+    <button id="step-button" disabled>Step</button>
+    <button id="play-button" disabled>Play</button>
+    <label>Speed: <input id="speed-slider" type="range" min="100" max="2000" value="500"></label>
+  </div>
+
+  <div id="dfa-output" style="position:absolute; bottom:10px; left:10px; right:10px; max-height:30%; overflow:auto; background:rgba(255,255,255,0.9); padding:10px; font-family:monospace; font-size:14px; z-index:10;"></div>
+
+  <svg id="canvas" width="100%" height="100%">
+    <defs>
+      <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 Z" fill="#333"/>
+      </marker>
+    </defs>
+  </svg>
+
+  <script src="script.js"></script>
+  <script type="module">
+    import DFA from './dfa.js';
+    const btn = document.getElementById('export-dfa');
+    const stepBtn = document.getElementById('step-button');
+    const playBtn = document.getElementById('play-button');
+    const speedSlider = document.getElementById('speed-slider');
+    const output = document.getElementById('dfa-output');
+    const inputBox = document.getElementById('input-string');
+    const svg = document.getElementById('canvas');
+
+    let dfa, inputStr, currentState, stepIndex, playInterval;
+
+    // Clear both step highlights and selection highlights
+    function clearAllSelections() {
+      clearStepHighlights();
+      if (typeof clearSelection === 'function') clearSelection();
+    }
+
+    function clearErrorHighlights() {
+      document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+    }
+    function clearInputDisplay() {
+      document.getElementById('input-display')?.remove();
+    }
+    function clearStepHighlights() {
+      document.querySelectorAll('.current-state').forEach(el => el.classList.remove('current-state'));
+      document.querySelectorAll('.current-edge').forEach(el => el.classList.remove('current-edge'));
+      document.querySelectorAll('.input-char.current').forEach(el => el.classList.remove('current'));
+    }
+    function finishSimulation() {
+      clearInterval(playInterval);
+      stepBtn.disabled = true;
+      playBtn.disabled = true;
+      const result = dfa.finals.includes(currentState) ? 'PASS' : 'FAIL';
+      output.innerHTML += `<div><strong>Result: ${result}</strong></div>`;
+    }
+
+    btn.addEventListener('click', () => {
+      clearErrorHighlights(); clearInputDisplay(); clearStepHighlights(); clearInterval(playInterval); clearAllSelections();
+      output.innerHTML = '';
+      dfa = DFA.fromDOM();
+      const { valid, errors } = dfa.validate();
+
+      if (!valid) {
+        output.innerHTML = `<strong>Invalid DFA:</strong><br>${errors.map(e => `<div>${e}</div>`).join('')}`;
+        stepBtn.disabled = true;
+        playBtn.disabled = true;
+      } else {
+        let html = `<strong>Valid DFA</strong><br>Start: <code>${dfa.start}</code><br>Finals: <code>${dfa.finals.join(', ')}</code><br><strong>Transition Table:</strong>`;
+        html += '<table><thead><tr><th>State</th>';
+        dfa.alphabet.forEach(sym => html += `<th>${sym}</th>`);
+        html += '</tr></thead><tbody>';
+        dfa.states.forEach(s => {
+          html += `<tr><td>${s}</td>`;
+          dfa.alphabet.forEach(sym => html += `<td>${dfa.transitions[s]?.[sym]||''}</td>`);
+          html += '</tr>';
+        }); html += '</tbody></table>';
+        output.innerHTML = html;
+
+        inputStr = inputBox.value.trim();
+        if (inputStr) {
+          const width = svg.getBoundingClientRect().width;
+          const x0 = (width - inputStr.length * 24) / 2;
+          const y = 40;
+          const txt = document.createElementNS(svg.namespaceURI, 'text');
+          txt.id = 'input-display'; txt.setAttribute('x', x0); txt.setAttribute('y', y);
+          txt.setAttribute('text-anchor', 'start');
+          inputStr.split('').forEach((ch,i) => {
+            const tsp = document.createElementNS(svg.namespaceURI, 'tspan');
+            tsp.id = `char-${i}`; tsp.classList.add('input-char'); tsp.setAttribute('dx', i>0?24:0);
+            tsp.textContent = ch;
+            txt.appendChild(tsp);
+          });
+          svg.appendChild(txt);
+
+          currentState = dfa.start;
+          stepIndex = 0;
+          stepBtn.disabled = false;
+          playBtn.disabled = false;
+        } else {
+          stepBtn.disabled = true;
+          playBtn.disabled = true;
+        }
+      }
+    });
+
+    stepBtn.addEventListener('click', () => {
+      if (!dfa || stepIndex > inputStr.length) return;
+      if (stepIndex === inputStr.length) return finishSimulation();
+      clearStepHighlights();
+      const sym = inputStr[stepIndex];
+      document.getElementById(`char-${stepIndex}`)?.classList.add('current');
+      document.querySelector(`.state-group[data-label="${currentState}"]`)?.classList.add('current-state');
+      const edgeEl = Array.from(document.querySelectorAll('.transition-group')).find(tg =>
+        tg.dataset.src === currentState && tg.querySelector('text').textContent.trim() === sym
+      );
+      edgeEl?.classList.add('current-edge');
+      currentState = dfa.transitions[currentState]?.[sym] || currentState;
+      stepIndex++;
+      if (stepIndex === inputStr.length) finishSimulation();
+    });
+
+    playBtn.addEventListener('click', () => {
+      output.innerHTML += `<div><em>Starting autoplay...</em></div>`;
+
+      playInterval = setInterval(() => {
+        stepBtn.click();
+      }, parseInt(speedSlider.value, 10));
+    });
+
+    // Clear highlights on canvas click
+    svg.addEventListener('click', e => {
+      if (e.target === svg) {
+        clearStepHighlights();
+        clearSelection();
+      }
+    });
+  </script>
+</body>
+</html>
