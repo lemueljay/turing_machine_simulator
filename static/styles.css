@@ -29,7 +29,6 @@ body {
     font-family: "Courier New", monospace;
     font-size: 28px;
     margin: 50px 0px;
-    pointer-events: none;
 }
 
 .main-footer {
@@ -45,6 +44,12 @@ body {
 
 .hashes span {
     display: inline-block;
+}
+
+.tm-link {
+    text-decoration: underline;
+    cursor: pointer;
+    color: teal;
 }
 
 /* Blinking cursor */
