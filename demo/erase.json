@@ -26,14 +26,7 @@
         "#": {
           "write": "_",
           "move": "R",
-          "next": "write_yes"
-        }
-      },
-      "write_yes": {
-        "#": {
-            "write": "Y",
-            "move": "R",
-            "next": "halt"
+          "next": "halt"
         }
       }
     }
