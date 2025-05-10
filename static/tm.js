@@ -43,7 +43,7 @@ export default class TuringMachine {
 
     _write(s) {
         if (s === "_") {
-             // no write ⇒ no change
+             // no write -> no change
              return;
         }
         this.tape[this.head] = s; 
