@@ -1,0 +1,112 @@
+html,
+body {
+    margin: 0;
+    height: 100%;
+    font-family: "Courier New", monospace;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    grid-template-columns: 1fr 240px;
+    overflow: hidden;
+}
+
+.container {
+    position: relative;
+    text-align: center;
+    font-size: 64px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    word-break: break-all;
+}
+
+.title {
+    position: fixed;
+    text-align: center;
+    top: 10px;
+    width: 100%;
+    text-align: center;
+    font-family: "Courier New", monospace;
+    font-size: 28px;
+    margin: 50px 0px;
+    pointer-events: none;
+}
+
+.main-footer {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #666;
+    user-select: none;
+}
+
+.hashes span {
+    display: inline-block;
+}
+
+/* Blinking cursor */
+@keyframes blinkCursor {
+    0%, 49% {
+        border-color: transparent;
+    }
+
+    50%, 100% {
+        border-color: #000;
+    }
+}
+
+.hashes .cursor {
+    border-bottom: 6px solid #000;
+    animation: blinkCursor 1s step-end infinite;
+    color: #ff6b6b;
+
+}
+
+.hashes.halted .cursor {
+    color: #000;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+    background: #f7f7f7;
+    border-left: 1px solid #d0d0d0;
+    font-size: 14px;
+    overflow-y: auto;
+}
+
+.spacer {
+    flex: 1 1 auto;
+}
+
+.sidebar footer.donate {
+    margin-top: auto;
+    text-align: center;
+    font-weight: 600;
+}
+
+textarea {
+    width: 100%;
+    font-family: inherit;
+}
+
+button {
+    margin-top: .25rem;
+}
+
+hr {
+    margin: 1rem 0;
+}
+
+.status {
+    margin-top: .5rem;
+    font-weight: 600;
+}

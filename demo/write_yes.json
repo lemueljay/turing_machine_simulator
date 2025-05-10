@@ -1,0 +1,40 @@
+{
+    "blank": "_",
+    "start": "erase",
+    "accept": [
+      "halt"
+    ],
+    "rules": {
+      "erase": {
+        "#": {
+          "write": "#",
+          "move": "L",
+          "next": "erase_action"
+        }
+      },
+      "erase_action": {
+        "a": {
+          "write": "#",
+          "move": "L",
+          "next": "erase_action"
+        },
+        "b": {
+          "write": "#",
+          "move": "L",
+          "next": "erase_action"
+        },
+        "#": {
+          "write": "_",
+          "move": "R",
+          "next": "write_yes"
+        }
+      },
+      "write_yes": {
+        "#": {
+            "write": "Y",
+            "move": "R",
+            "next": "halt"
+        }
+      }
+    }
+  }

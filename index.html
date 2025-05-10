@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Turing‑Machine Visualiser</title>
+    <link rel="stylesheet" href="./static/styles.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 class="title">A Simple Turing Machine Simulator. Or Is It?</h1>
+        <div id="hashes" class="hashes"></div>
+        <footer class="main-footer">
+            Developed by <a href="mailto:lemueljayvallinas@gmail.com">lemueljay</a> 🚀| 2025
+        </footer>
+    </div>
+
+
+    <aside class="sidebar">
+        <h3>Turing‑Machine JSON</h3>
+        <textarea id="jsonInput" rows="12" spellcheck="false">
+        {
+          "blank": "_",
+          "start": "s1",
+          "accept": [
+            "halt"
+          ],
+          "rules": {
+          "s1": {
+            "#": {
+              "write": "_",
+              "move": "L",
+              "next": "s2"
+            }
+          },
+          "s2": {
+            "a": {
+              "write": "b",
+              "move": "L",
+              "next": "s2"
+            },
+            "b": {
+              "write": "a",
+              "move": "L",
+              "next": "s2"
+            },
+            "#": {
+              "write": "_",
+              "move": "N",
+              "next": "go_to_first_right_tag"
+            }
+          },
+        "go_to_first_right_tag": {
+          "#": {
+            "write": "_",
+            "move": "R",
+            "next": "scan_right_to_next_tag"
+          }
+        },
+        "scan_right_to_next_tag": {
+          "a": {
+            "write": "_",
+            "move": "R",
+            "next": "scan_right_to_next_tag"
+          },
+          "b": {
+            "write": "_",
+            "move": "R",
+            "next": "scan_right_to_next_tag"
+          },
+          "#": {
+            "write": "_",
+            "move": "N",
+            "next": "halt"
+          }
+        }
+      }
+    }
+    </textarea>
+        <button onclick="initTM()">🔄 Init TM</button>
+
+        <hr>
+
+        <p>Initial&nbsp;tape (string):</p>
+        <input id="tapeInput" value="#abba#" style="width: 100%" />
+
+        <p class="status" id="status">State: —</p>
+
+        <button onclick="stepTM()">▶ Step</button>
+        <button id="playBtn" onclick="playTM()">► Play</button>
+
+        <hr>
+
+        <footer class="donate">
+            <p>Buy me coffee:</p>
+            <img style="width: 100px; height: auto;" src="./static/gcash-qr.png" alt="GCash QR Code" />
+        </footer>
+    </aside>
+
+    <script src="./static/script.js" type="module"></script>
+</body>
+
+</html>

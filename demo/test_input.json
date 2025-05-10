@@ -1,0 +1,16 @@
+{
+  "blank": "_",
+  "start": "contains_aba",
+  "accept": [
+    "halt"
+  ],
+  "rules": {
+    "contains_aba": {
+      "#": {
+        "write": "_",
+        "move": "L",
+        "next": "halt"
+      }
+    }
+  }
+}

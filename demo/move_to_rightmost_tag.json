@@ -1,0 +1,33 @@
+{
+    "blank": "_",
+    "start": "s1",
+    "accept": [
+      "halt"
+    ],
+    "rules": {
+      "go_to_first_right_tag": {
+        "#": {
+          "write": "_",
+          "move": "R",
+          "next": "scan_right_to_next_tag"
+        }
+      },
+      "scan_right_to_next_tag": {
+        "a": {
+          "write": "_",
+          "move": "R",
+          "next": "scan_right_to_next_tag"
+        },
+        "b": {
+          "write": "_",
+          "move": "R",
+          "next": "scan_right_to_next_tag"
+        },
+        "#": {
+          "write": "_",
+          "move": "N",
+          "next": "halt"
+        }
+      }
+    }
+  }
