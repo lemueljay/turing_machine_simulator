@@ -35,11 +35,12 @@ Will add more as I iterate further.
 
 ---
 
-## 🛠️ Built With
+## 📂 GitHub Repository
 
-- JavaScript (Visualizer)
-- Formal Language Theory
-- Notion (for documentation)
+🔗 Check out the source code and contribute:  
+👉 [lemueljay/turing_machine_simulator](https://github.com/lemueljay/turing_machine_simulator)
+
+---
 
 ## 🚀 Get Involved
 
