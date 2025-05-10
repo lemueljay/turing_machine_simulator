@@ -11,6 +11,14 @@ A visual walkthrough of how a **Deterministic Finite Automaton (DFA)** can evolv
 
 ---
 
+## 🧪 Example Inputs
+
+🔍 Curious how to get started? Example demo inputs can be found in the [`demo/`](https://github.com/lemueljay/turing_machine_simulator/tree/main/demo) folder.
+These include sample JSON configurations you can load into the simulator to see predefined state transitions in action.
+Will add more as I iterate further.
+
+---
+
 ## 📘 Read the Full Documentation
 
 👉 [**Open in Notion**](https://unmarred-mangosteen-1ca.notion.site/From-Finite-Loops-to-Infinite-Tapes-1ef9ad59a1d880348cdbf020148e90d7?pvs=73)
