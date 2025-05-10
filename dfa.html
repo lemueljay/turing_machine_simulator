@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFA Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header class="main-header">
+        DFA Visualizer
+        <span class="developer">— Developed by 
+          <a href="mailto:lemueljayvallinas@gmail.com">lemueljay</a> 🚀 | 2025
+        </span>
+      </header>
+    <div id="instructions" style="position:absolute; top:60px; left:10px; z-index:10;">
+        • Double-click blank space to add a state.<br>
+        • Alt+click a state to toggle it as the start state (caret).<br>
+        • Double-click a state to select it as the transition source.<br>
+        • Single-click another (or same) state to add a transition.<br>
+        • Shift+click a state to toggle final (double circle).<br>
+        • Click to select; Delete to remove.<br>
+        • Drag to reposition; transitions auto-update.<br>
+    </div>
+
+    <div id="controls">
+        <input id="input-string" type="text" placeholder="Enter input string">
+        <button id="export-dfa">Validate & Run</button>
+        <button id="step-button" disabled>Step</button>
+        <button id="play-button" disabled>Play</button>
+        <label>Speed: <input id="speed-slider" type="range" min="100" max="2000" value="500"></label>
+    </div>
+
+    <div id="dfa-output"
+        style="position:absolute; bottom:10px; left:10px; right:10px; max-height:30%; overflow:auto; background:rgba(255,255,255,0.9); padding:10px; font-family:monospace; font-size:14px; z-index:10;">
+    </div>
+
+    <svg id="canvas" width="100%" height="100%">
+        <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto"
+                markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 Z" fill="#333" />
+            </marker>
+        </defs>
+    </svg>
+
+    <script src="script.js"></script>
+    <script type="module">
+        import DFA from './dfa.js';
+        const btn = document.getElementById('export-dfa');
+        const stepBtn = document.getElementById('step-button');
+        const playBtn = document.getElementById('play-button');
+        const speedSlider = document.getElementById('speed-slider');
+        const output = document.getElementById('dfa-output');
+        const inputBox = document.getElementById('input-string');
+        const svg = document.getElementById('canvas');
+
+        let dfa, inputStr, currentState, stepIndex, playInterval;
+
+        // Clear both step highlights and selection highlights
+        function clearAllSelections() {
+            clearStepHighlights();
+            if (typeof clearSelection === 'function') clearSelection();
+        }
+
+        function clearErrorHighlights() {
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+        }
+        function clearInputDisplay() {
+            document.getElementById('input-display')?.remove();
+            document.getElementById('result-display')?.remove();
+        }
+        function clearStepHighlights() {
+            document.querySelectorAll('.current-state').forEach(el => el.classList.remove('current-state'));
+            document.querySelectorAll('.current-edge').forEach(el => el.classList.remove('current-edge'));
+            document.querySelectorAll('.input-char.current').forEach(el => el.classList.remove('current'));
+        }
+        function finishSimulation() {
+            clearInterval(playInterval);
+            stepBtn.disabled = true;
+            playBtn.disabled = true;
+            clearStepHighlights();
+
+            // re-highlight last char & state
+            const lastIdx = inputStr.length - 1;
+            document.getElementById(`char-${lastIdx}`)?.classList.add('current');
+            document
+                .querySelector(`.state-group[data-label="${currentState}"]`)
+                ?.classList.add('current-state');
+
+            // compute result
+            const result = dfa.finals.includes(currentState) ? 'PASS' : 'FAIL';
+
+            // figure out where to put it
+            const width = svg.getBoundingClientRect().width;
+            const x0 = (width - inputStr.length * 24) / 2;
+            // match your input-display y + some padding
+            const inputY = parseFloat(document.getElementById('input-display').getAttribute('y'));
+            const resultY = inputY + 40;
+
+            // create the SVG text for the result
+            const rt = document.createElementNS(svg.namespaceURI, 'text');
+            rt.id = 'result-display';
+            rt.setAttribute('x', x0);
+            rt.setAttribute('y', resultY);
+            rt.setAttribute('text-anchor', 'start');
+            rt.setAttribute('font-size', '24px');
+            rt.setAttribute('font-weight', 'bold');
+            rt.textContent = result;
+            svg.appendChild(rt);
+
+            // also print in the output panel if you like
+            output.innerHTML += `<div><strong>Result: ${result}</strong></div>`;
+        }
+
+        btn.addEventListener('click', () => {
+            clearErrorHighlights(); clearInputDisplay(); clearStepHighlights(); clearInterval(playInterval); clearAllSelections();
+            output.innerHTML = '';
+            dfa = DFA.fromDOM();
+            const { valid, errors } = dfa.validate();
+
+            if (!valid) {
+                // For each error message, grab all quoted tokens (state labels or symbols)
+                errors.forEach(err => {
+                    const tokens = [...err.matchAll(/"([^"]+)"/g)].map(m => m[1]);
+                    tokens.forEach(tok => {
+                        // 1) highlight any state-group whose label matches
+                        const sg = document.querySelector(`.state-group[data-label="${tok}"]`);
+                        if (sg) sg.classList.add('error');
+
+                        // 2) highlight any transition-group that involves that token
+                        document.querySelectorAll('.transition-group').forEach(tg => {
+                            const lbls = tg.querySelector('text').textContent.trim().split(/\s*,\s*/);
+                            if (
+                                tg.dataset.src === tok ||
+                                tg.dataset.dest === tok ||
+                                lbls.includes(tok)
+                            ) {
+                                tg.classList.add('error');
+                            }
+                        });
+                    });
+                });
+
+                // dump errors to the panel
+                output.innerHTML = `<strong>Invalid DFA:</strong><br>`
+                    + errors.map(e => `<div>${e}</div>`).join('');
+                stepBtn.disabled = true;
+                playBtn.disabled = true;
+                return;
+            } else {
+                document.querySelector(`.state-group[data-label="${dfa.start}"]`)?.classList.add('current-state');
+                let html = `<strong>Valid DFA</strong><br>Start: <code>${dfa.start}</code><br>Finals: <code>${dfa.finals.join(', ')}</code><br><strong>Transition Table:</strong>`;
+                html += '<table><thead><tr><th>State</th>';
+                dfa.alphabet.forEach(sym => html += `<th>${sym}</th>`);
+                html += '</tr></thead><tbody>';
+                dfa.states.forEach(s => {
+                    html += `<tr><td>${s}</td>`;
+                    dfa.alphabet.forEach(sym => html += `<td>${dfa.transitions[s]?.[sym] || ''}</td>`);
+                    html += '</tr>';
+                }); html += '</tbody></table>';
+                output.innerHTML = html;
+
+                inputStr = inputBox.value.trim();
+                if (inputStr) {
+                    const width = svg.getBoundingClientRect().width;
+                    const x0 = (width - inputStr.length * 24) / 2;
+                    const y = 100;
+                    const txt = document.createElementNS(svg.namespaceURI, 'text');
+                    txt.id = 'input-display'; txt.setAttribute('x', x0); txt.setAttribute('y', y);
+                    txt.setAttribute('text-anchor', 'start');
+                    inputStr.split('').forEach((ch, i) => {
+                        const tsp = document.createElementNS(svg.namespaceURI, 'tspan');
+                        tsp.id = `char-${i}`; tsp.classList.add('input-char'); tsp.setAttribute('dx', i > 0 ? 24 : 0);
+                        tsp.textContent = ch;
+                        txt.appendChild(tsp);
+                    });
+                    svg.appendChild(txt);
+
+                    currentState = dfa.start;
+                    stepIndex = 0;
+                    stepBtn.disabled = false;
+                    playBtn.disabled = false;
+                } else {
+                    stepBtn.disabled = true;
+                    playBtn.disabled = true;
+                }
+            }
+        });
+
+        stepBtn.addEventListener('click', () => {
+            if (!dfa || stepIndex > inputStr.length) return;
+            if (stepIndex === inputStr.length) return finishSimulation();
+
+            clearStepHighlights();
+
+            // 1) mark the current input character
+            const sym = inputStr[stepIndex];
+            document.getElementById(`char-${stepIndex}`)?.classList.add('current');
+
+            // 2) figure out source and destination
+            const src = currentState;
+            const dest = dfa.transitions[src]?.[sym] || src;
+
+            // 3) highlight the edge being taken
+            const edgeEl = Array.from(document.querySelectorAll('.transition-group')).find(tg =>
+                tg.dataset.src === src &&
+                tg.querySelector('text').textContent.trim() === sym
+            );
+            edgeEl?.classList.add('current-edge');
+
+            // 4) highlight the **destination** state
+            document.querySelector(`.state-group[data-label="${dest}"]`)
+                ?.classList.add('current-state');
+
+            // 5) advance
+            currentState = dest;
+            stepIndex++;
+            if (stepIndex === inputStr.length) finishSimulation();
+        });
+
+        playBtn.addEventListener('click', () => {
+            output.innerHTML += `<div><em>Starting autoplay...</em></div>`;
+
+            playInterval = setInterval(() => {
+                stepBtn.click();
+            }, parseInt(speedSlider.value, 10));
+        });
+
+        // Clear highlights on canvas click
+        svg.addEventListener('click', e => {
+            if (e.target === svg) {
+                clearStepHighlights();
+                clearSelection();
+            }
+        });
+    </script>
+</body>
+
+</html>
