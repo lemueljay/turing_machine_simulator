@@ -1,5 +1,8 @@
 # 🧠 From Finite Loops to Infinite Tapes
 
+![image](https://github.com/user-attachments/assets/d3dc6272-1079-466d-94b4-1ef9f66bb52d)
+
+
 A visual walkthrough of how a **Deterministic Finite Automaton (DFA)** can evolve into a fully-fledged **Turing Machine Simulator**. This documentation is perfect for anyone curious about **Theory of Computation**.
 
 ---
